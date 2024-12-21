@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: guest-book
 data:
-  ui_properties_file_name: "kaviarasu-interface.properties"
+  ui_properties_file_name: "user-interface.properties"
