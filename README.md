@@ -1,4 +1,4 @@
-# Deploying Resources to Multiple Kubernetes Clusters using Argo CD (Hub-and-Spoke Model)
+# Deploying Resources to Multiple Kubernetes Clusters Using Argo CD (Hub-and-Spoke Model)
 
 This guide demonstrates how to deploy resources to multiple AWS EKS clusters using Argo CD in a Hub-and-Spoke model.
 
@@ -12,7 +12,7 @@ This model provides centralized control while enabling distributed deployments, 
 ---
 
 ## Step 1: Create EKS Clusters
-
+Use `eksctl` to create the Hub and Spoke clusters.
 ```bash
 # Hub Cluster
 eksctl create cluster --name hub-cluster --region <region> --nodes 3 --node-type t3.medium
@@ -35,7 +35,9 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 ```
-## Step 3 : Run Argo CD in HTTP Mode(Insecure)
+---
+## Step 3 : Run Argo CD in HTTP Mode
+Edit the Argo CD configuration to enable HTTP mode.
 ```bash
 kubectl edit  configmap  argocd-cmd-params-cm -n argocd
 
@@ -44,24 +46,34 @@ data:
   server.instance: "true"
 
 ```
-
-## Step 4 : Change the type to NodePort
+---
+## Step 4 : Change Argo CD Service Type to NodePort
+Change the Argo CD service type for external access.
 
 ```bash
-kubectl edit svc argocd-server -n argocd  # change the type to NodePort
+kubectl edit svc argocd-server -n argocd
+
+# Modify the type to NodePort:
+spec:
+  type: NodePort
 ```
+---
 ## Step 5 : Expose Argo CD UI
-
-Go to hub your ec2 instance, Copy your ec2 instance public Ip and open port for 30812 and paste it in the browser <your public ip>: 30812
-
+To access the Argo CD UI, perform the following:
+  * Obtain the public IP of the EC2 instance running your Hub cluster.
+  * Open port 30812 in the security group associated with your EC2 instance.
+  * Access the Argo CD UI in your browser at <your-public-ip>:30812.
+  * Retrieve the Argo CD admin password.
 ```bash
 
 # get the password and login to argocd
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 
 ```
+---
 
-## 6 . Add Cluster
+## 6 . Add Clusters to Argo CD
+Log in to the Argo CD server and register the Spoke clusters.
 
 ```bash
 # Login to your hub cluster with username and password
@@ -74,6 +86,14 @@ argocd cluster add <context of the spoke-cluster1> --server <your ec2 hub instan
 argocd cluster add <context of the spoke-cluster2> --server <your ec2 hub instance public ip>:30812
 
 ```
+![Screenshot 2024-12-21 155115](https://github.com/user-attachments/assets/753906f5-47f9-407e-a3cc-760b9365ed91)
+
+---
 
 ## Create a application in ArgoCD UI
-* Create a application for spoke-cluster1 and spoke-cluster2 with all the repo details and path and click save. Now this will look for any changes happening in manifest file and it will create kubernetes for us.
+* Log in to the Argo CD UI using the admin credentials.
+* Navigate to Applications and create an application for each Spoke cluster.
+* Provide the repository details, paths, and target clusters for each application.
+* Save the applications. Argo CD will monitor the manifests and deploy the resources automatically.
+
+---
