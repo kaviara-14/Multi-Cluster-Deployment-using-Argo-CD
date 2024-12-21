@@ -90,7 +90,7 @@ argocd cluster add <context of the spoke-cluster2> --server <your ec2 hub instan
 
 ---
 
-## Create a application in ArgoCD UI
+## 7. Create a application in ArgoCD UI
 * Log in to the Argo CD UI using the admin credentials.
 * Navigate to Applications and create an application for each Spoke cluster.
 * Provide the repository details, paths, and target clusters for each application.
